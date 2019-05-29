@@ -1,4 +1,6 @@
 module Constants
+    # Does not export anything - rely on namespace for use
+
     set_zero_subnormals(true)
 
     # Histogram and problem parameters
@@ -22,7 +24,7 @@ module Constants
 
     # Iteration condition
     global const num_say = convert(Int64, num_t / 1e2)
-    global const weight_cutoff = 1e-8
+    global const weight_cutoff = 1e-10
 
     # Physics constants
     global const sol = 29979245800.0  # cm/s
@@ -43,8 +45,4 @@ module Constants
     global const spec_heat_2 = 1.0  # erg/g-eV
     global const volfrac_1 = chord_1 / (chord_1 + chord_2)
     global const volfrac_2 = 1.0 - volfrac_1
-
-    # Linear factors
-    global const factor_1 = 4.0 * arad / (dens_1 * spec_heat_1)  # eV^-3
-    global const factor_2 = 4.0 * arad / (dens_2 * spec_heat_2)  # eV^-3
 end

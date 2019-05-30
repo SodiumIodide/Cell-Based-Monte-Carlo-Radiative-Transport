@@ -168,7 +168,7 @@ function main()::Nothing
     println("Average energy balance: ", mean(energy_balance))
     println("Maximum energy balance: ", greatest(energy_balance))
 
-    local tabular::DataFrame = DataFrame(time=times[2:end], intensity1=intensity_1[2:end], temp1=temperature_1[2:end], intensity2=intensity_2[2:end], temp2=temperature_2[2:end])
+    local tabular::DataFrame = DataFrame(time=times[2:end], intensity1=intensity_1[2:end], temp1=energy_from_temp.(temperature_1[2:end]), intensity2=intensity_2[2:end], temp2=energy_from_temp.(temperature_2[2:end]))
 
     CSV.write("out/infcell_1.csv", tabular)
     println("File written")

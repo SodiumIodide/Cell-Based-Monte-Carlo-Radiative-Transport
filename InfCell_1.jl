@@ -20,13 +20,12 @@ using .Common
 
 set_zero_subnormals(true)
 
-function energy_deposition!(particle::Particle, dist::Float64, temp::Float64)::NTuple{2, Float64}
+function energy_deposition!(particle::Particle, dist::Float64, temp::Float64, vol::Float64)::NTuple{2, Float64}
     local opacity::Float64 = sigma_a(particle.opacity, temp)
-    local delta_energy::Float64 = @fastmath particle.weight * (1.0 - exp(-opacity * dist))
-    @fastmath particle.weight -= delta_energy
+    local result_dep::Float64 = @fastmath particle.weight * (1.0 - exp(-opacity * dist))
+    @fastmath particle.weight -= result_dep
 
-    local result_dep::Float64 = delta_energy
-    local result_em::Float64 = @fastmath opacity * c.arad * temp^4 * c.vol * dist
+    local result_em::Float64 = @fastmath opacity * c.arad * temp^4 * vol * dist
 
     return (result_dep, result_em)
 end
@@ -34,11 +33,11 @@ end
 function deposit_energy!(particle::Particle, dep_1::Float64, dep_2::Float64, em_1::Float64, em_2::Float64, distance::Float64, temp1::Float64, temp2::Float64)::NTuple{4, Float64}
     local (result_dep::Float64, result_em::Float64)
     if @fastmath (particle.mat_num == 1)
-        (result_dep, result_em) = energy_deposition!(particle, distance, temp1)
+        (result_dep, result_em) = energy_deposition!(particle, distance, temp1, c.vol_1)
         @fastmath dep_1 += result_dep
         @fastmath em_1 += result_em
     else
-        (result_dep, result_em) = energy_deposition!(particle, distance, temp2)
+        (result_dep, result_em) = energy_deposition!(particle, distance, temp2, c.vol_2)
         @fastmath dep_2 += result_dep
         @fastmath em_2 += result_em
     end
@@ -72,8 +71,8 @@ function main()::Nothing
             @fastmath num_2 += 1
         end
     end
-    local init_weight_1::Float64 = @fastmath c.init_intensity * (c.vol / c.sol) / convert(Float64, num_1)
-    local init_weight_2::Float64 = @fastmath c.init_intensity * (c.vol / c.sol) / convert(Float64, num_2)
+    local init_weight_1::Float64 = @fastmath c.init_intensity * (c.vol_1 / c.sol) / convert(Float64, c.num_particles)
+    local init_weight_2::Float64 = @fastmath c.init_intensity * (c.vol_2 / c.sol) / convert(Float64, c.num_particles)
     @simd for particle in particles
         if @fastmath (particle.mat_num == 1)
             particle.weight = init_weight_1
@@ -101,6 +100,9 @@ function main()::Nothing
         prev_eng = tot_eng
         # Inner loop - particles
         @simd for particle in particles
+            if (isnan(particle.weight))
+                error("NaN encountered")
+            end
             particle.t_remaining = c.delta_t  # s
             # Per particle loop - propagate data in time-step
             while @fastmath (particle.t_remaining > 0.0)
@@ -108,7 +110,7 @@ function main()::Nothing
                 # Distance to boundary
                 local (dist_b::Float64, bound::CollisionType) = dist_to_boundary(particle)  # cm
                 # Distance to transition
-                local dist_t::Float64 = dist_to_transition(generator, particle.chord)  # cm
+                local dist_t::Float64 = dist_to_transition(generator, particle)  # cm
                 # Distance to census (end of time-step)
                 local dist_c::Float64 = dist_to_census(particle)  # cm
                 # Apply distance computations
@@ -137,24 +139,24 @@ function main()::Nothing
 
         #@fastmath energy_dep_1 /= c.volfrac_1
         #@fastmath energy_dep_2 /= c.volfrac_2
-        @fastmath energy_em_1 /= (convert(Float64, c.num_particles) * c.volfrac_1)
-        @fastmath energy_em_2 /= (convert(Float64, c.num_particles) * c.volfrac_2)
+        @fastmath energy_em_1 /= (convert(Float64, particles_m1))
+        @fastmath energy_em_2 /= (convert(Float64, particles_m2))
 
         # Update intensity values based on deposition and emission
-        @inbounds @fastmath intensity_1[index] = intensity_1[index - 1] + (energy_em_1 - energy_dep_1) * (c.sol / c.vol)
-        @inbounds @fastmath intensity_2[index] = intensity_2[index - 1] + (energy_em_2 - energy_dep_2) * (c.sol / c.vol)
+        @inbounds @fastmath intensity_1[index] = intensity_1[index - 1] + (energy_em_1 - energy_dep_1) * (c.sol / c.vol_1)
+        @inbounds @fastmath intensity_2[index] = intensity_2[index - 1] + (energy_em_2 - energy_dep_2) * (c.sol / c.vol_2)
 
         # Calculate temperature change based on intensity values
-        @inbounds temperature_1[index] = @fastmath temperature_1[index - 1] + (energy_dep_1 - energy_em_1) / (c_v_1 * c.dens_1 * c.vol)
-        @inbounds temperature_2[index] = @fastmath temperature_2[index - 1] + (energy_dep_2 - energy_em_2) / (c_v_2 * c.dens_2 * c.vol)
+        @inbounds temperature_1[index] = @fastmath temperature_1[index - 1] + (energy_dep_1 - energy_em_1) / (c_v_1 * c.dens_1 * c.vol_1)
+        @inbounds temperature_2[index] = @fastmath temperature_2[index - 1] + (energy_dep_2 - energy_em_2) / (c_v_2 * c.dens_2 * c.vol_2)
 
         # Track energy balance
-        tot_eng = @inbounds @fastmath (intensity_1[index] * c.vol / c.sol) * c.volfrac_1 + (intensity_2[index] * c.vol / c.sol) * c.volfrac_2 + (temperature_1[index] * c.dens_1 * c_v_1 * c.vol) * c.volfrac_1 + (temperature_2[index] * c.dens_2 * c_v_2 * c.vol) * c.volfrac_2
-        push(energy_balance, tot_eng - prev_eng)
+        tot_eng = @inbounds @fastmath (intensity_1[index] * c.vol_1 / c.sol) + (intensity_2[index] * c.vol_2 / c.sol) + (temperature_1[index] * c.dens_1 * c_v_1 * c.vol_1) + (temperature_2[index] * c.dens_2 * c_v_2 * c.vol_2)
+        push(energy_balance, abs(tot_eng - prev_eng))
 
         # Renormalize
-        local normal_energy_1::Float64 = @inbounds @fastmath intensity_1[index] * (c.sol / c.vol) / convert(Float64, particles_m1)
-        local normal_energy_2::Float64 = @inbounds @fastmath intensity_2[index] * (c.sol / c.vol) / convert(Float64, particles_m2)
+        local normal_energy_1::Float64 = @inbounds @fastmath intensity_1[index] * (c.sol / c.vol_1) / convert(Float64, c.num_particles)
+        local normal_energy_2::Float64 = @inbounds @fastmath intensity_2[index] * (c.sol / c.vol_2) / convert(Float64, c.num_particles)
         @simd for particle in particles
             if @fastmath (particle.mat_num == 1)
                 particle.weight = normal_energy_1

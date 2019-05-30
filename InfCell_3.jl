@@ -100,7 +100,7 @@ function main()::Nothing
                 # Distance to boundary
                 local (dist_b::Float64, bound::CollisionType) = dist_to_boundary(particle)  # cm
                 # Distance to transition
-                local dist_t::Float64 = dist_to_transition(generator, particle.chord)  # cm
+                local dist_t::Float64 = dist_to_transition(generator, particle)  # cm
                 # Distance to census (end of time-step)
                 local dist_c::Float64 = dist_to_census(particle)  # cm
                 # Apply distance computations
@@ -133,11 +133,6 @@ function main()::Nothing
         local energy_em_1::Float64 = @inbounds @fastmath c.sol * c.arad * sigma_a_1 * temperature_1[index - 1]^4 * c.vol_1 * c.delta_t
         local energy_em_2::Float64 = @inbounds @fastmath c.sol * c.arad * sigma_a_2 * temperature_2[index - 1]^4 * c.vol_2 * c.delta_t
 
-        #@fastmath energy_dep_1 /= c.volfrac_1
-        #@fastmath energy_dep_2 /= c.volfrac_2
-        #@fastmath energy_em_1 *= c.volfrac_1
-        #@fastmath energy_em_2 *= c.volfrac_2
-
         # Update intensity values based on deposition and emission
         @inbounds intensity_1[index] = @fastmath intensity_1[index - 1] + (energy_em_1 - energy_dep_1) * (c.sol / c.vol_1)
         @inbounds intensity_2[index] = @fastmath intensity_2[index - 1] + (energy_em_2 - energy_dep_2) * (c.sol / c.vol_2)
@@ -148,7 +143,7 @@ function main()::Nothing
 
         # Track energy balance
         tot_eng = @inbounds @fastmath (intensity_1[index] * c.vol_1 / c.sol) + (intensity_2[index] * c.vol_2 / c.sol) + (temperature_1[index] * c.dens_1 * c_v_1 * c.vol_1) + (temperature_2[index] * c.dens_2 * c_v_2 * c.vol_2)
-        push(energy_balance, tot_eng - prev_eng)
+        push(energy_balance, abs(tot_eng - prev_eng))
 
         # Contribute new intensity value
         local normal_energy_1::Float64 = @inbounds @fastmath (intensity_1[index] * (c.vol_1 / c.sol)) / convert(Float64, particles_m1)
@@ -165,7 +160,7 @@ function main()::Nothing
     println("Average energy balance: ", mean(energy_balance))
     println("Maximum energy balance: ", greatest(energy_balance))
 
-    local tabular::DataFrame = DataFrame(time=times[2:end], intensity1=intensity_1[2:end], temp1=temperature_1[2:end], intensity2=intensity_2[2:end], temp2=temperature_2[2:end])
+    local tabular::DataFrame = DataFrame(time=times[2:end], intensity1=intensity_1[2:end], temp1=energy_from_temp.(temperature_1[2:end]), intensity2=intensity_2[2:end], temp2=energy_from_temp.(temperature_2[2:end]))
 
     CSV.write("out/infcell_3.csv", tabular)
     println("File written")

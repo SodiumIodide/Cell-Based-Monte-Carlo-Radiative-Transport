@@ -143,8 +143,8 @@ module Common
         end
     end
 
-    @inline function dist_to_transition(gen::MersenneTwister, chord::Float64)::Float64
-        return @fastmath -(chord * c.sol) * log(rand(gen))
+    @inline function dist_to_transition(gen::MersenneTwister, particle::Particle)::Float64
+        return @fastmath -(particle.chord * c.sol) * log(rand(gen))
     end
 
     @inline function dist_to_census(particle::Particle)::Float64

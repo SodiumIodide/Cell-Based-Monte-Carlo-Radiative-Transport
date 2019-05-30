@@ -43,7 +43,7 @@ function main()::Nothing
 
     # Energy balance variables
     local energy_balance::RunningStat = RunningStat()
-    local tot_eng::Float64 = @fastmath c.init_intensity * (c.vol / c.sol) + (c.init_temp * c.dens_1 * c_v(c.spec_heat_1, c.init_temp) * c.vol * c.volfrac_1) + (c.init_temp * c.dens_2 * c_v(c.spec_heat_2, c.init_temp) * c.vol * c.volfrac_2)
+    local tot_eng::Float64 = @fastmath c.init_intensity * (c.vol / c.sol) + (c.init_temp * c.dens_1 * c_v(c.spec_heat_1, c.init_temp) * c.vol_1) + (c.init_temp * c.dens_2 * c_v(c.spec_heat_2, c.init_temp) * c.vol_2)
     local prev_eng::Float64 = 0.0
 
     # All initial particles have the same weight in a homogeneous cell
@@ -147,12 +147,12 @@ function main()::Nothing
         @inbounds temperature_2[index] = @fastmath temperature_2[index - 1] + (energy_dep_2 - energy_em_2) / (c_v_2 * c.dens_2 * c.vol_2)
 
         # Track energy balance
-        tot_eng = @inbounds @fastmath (intensity_1[index] * c.vol / c.sol) * c.volfrac_1 + (intensity_2[index] * c.vol / c.sol) * c.volfrac_2 + (temperature_1[index] * c.dens_1 * c_v_1 * c.vol) * c.volfrac_1 + (temperature_2[index] * c.dens_2 * c_v_2 * c.vol) * c.volfrac_2
+        tot_eng = @inbounds @fastmath (intensity_1[index] * c.vol_1 / c.sol) + (intensity_2[index] * c.vol_2 / c.sol) + (temperature_1[index] * c.dens_1 * c_v_1 * c.vol_1) + (temperature_2[index] * c.dens_2 * c_v_2 * c.vol_2)
         push(energy_balance, tot_eng - prev_eng)
 
         # Contribute new intensity value
-        local normal_energy_1::Float64 = @inbounds @fastmath (intensity_1[index] * (c.vol / c.sol)) / convert(Float64, particles_m1) * c.volfrac_1
-        local normal_energy_2::Float64 = @inbounds @fastmath (intensity_2[index] * (c.vol / c.sol)) / convert(Float64, particles_m2) * c.volfrac_2
+        local normal_energy_1::Float64 = @inbounds @fastmath (intensity_1[index] * (c.vol_1 / c.sol)) / convert(Float64, particles_m1)
+        local normal_energy_2::Float64 = @inbounds @fastmath (intensity_2[index] * (c.vol_2 / c.sol)) / convert(Float64, particles_m2)
         @simd for particle in particles
             if @fastmath (particle.mat_num == 1)
                 particle.weight = normal_energy_1

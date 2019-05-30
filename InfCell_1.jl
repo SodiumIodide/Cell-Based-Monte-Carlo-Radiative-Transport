@@ -52,7 +52,7 @@ function main()::Nothing
 
     # Energy balance variables
     local energy_balance::RunningStat = RunningStat()
-    local tot_eng::Float64 = @fastmath c.init_intensity * (c.vol / c.sol) + (c.init_temp * c.dens_1 * c_v(c.spec_heat_1, c.init_temp) * c.vol * c.volfrac_1) + (c.init_temp * c.dens_2 * c_v(c.spec_heat_2, c.init_temp) * c.vol * c.volfrac_2)
+    local tot_eng::Float64 = @fastmath c.init_intensity * (c.vol / c.sol) + (c.init_temp * c.dens_1 * c_v(c.spec_heat_1, c.init_temp) * c.vol_1) + (c.init_temp * c.dens_2 * c_v(c.spec_heat_2, c.init_temp) * c.vol_2)
     local prev_eng::Float64 = 0.0
 
     # All initial particles have the same weight in a homogeneous cell
@@ -101,9 +101,6 @@ function main()::Nothing
         prev_eng = tot_eng
         # Inner loop - particles
         @simd for particle in particles
-            if (isnan(particle.weight))
-                error("NaN encountered")
-            end
             particle.t_remaining = c.delta_t  # s
             # Per particle loop - propagate data in time-step
             while @fastmath (particle.t_remaining > 0.0)

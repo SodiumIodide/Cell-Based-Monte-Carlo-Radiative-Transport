@@ -40,7 +40,7 @@ def main():
         plt.savefig(f"{PLOTPATH}/infcell_1_temperature.png")
         plt.cla()
         plt.clf()
-    except:
+    except Exception as e:
         pass
 
     try:
@@ -75,7 +75,7 @@ def main():
         plt.savefig(f"{PLOTPATH}/infcell_2_temperature.png")
         plt.cla()
         plt.clf()
-    except:
+    except Exception as e:
         pass
 
     try:
@@ -110,7 +110,7 @@ def main():
         plt.savefig(f"{PLOTPATH}/infcell_3_temperature.png")
         plt.cla()
         plt.clf()
-    except:
+    except Exception as e:
         pass
 
     try:
@@ -150,8 +150,49 @@ def main():
         plt.savefig(f"{PLOTPATH}/infcell_2_temperature_linear.png")
         plt.cla()
         plt.clf()
-    except:
-        pass
+
+        arr_len = len(linear['time'])
+
+        re_intensity_1 = np.zeros(arr_len)
+        re_intensity_2 = np.zeros(arr_len)
+        re_energy_1 = np.zeros(arr_len)
+        re_energy_2 = np.zeros(arr_len)
+        for index, intensity in enumerate(linear['intensity1']):
+            re_intensity_1[index] = np.abs(infcell_2['intensity1'][index] - intensity) / intensity
+        for index, intensity in enumerate(linear['intensity2']):
+            re_intensity_2[index] = np.abs(infcell_2['intensity2'][index] - intensity) / intensity
+        for index, energy in enumerate(linear['energy1']):
+            re_energy_1[index] = np.abs(infcell_2['temp1'][index] - energy) / energy
+        for index, energy in enumerate(linear['energy2']):
+            re_energy_2[index] = np.abs(infcell_2['temp2'][index] - energy) / energy
+
+        print("INFCELL_2:")
+        print(f"Max Relative Error Intensity 1: {np.max(re_intensity_1)}")
+        print(f"Mean Relative Error Intensity 1: {np.mean(re_intensity_1)}")
+        print(f"Max Relative Error Intensity 2: {np.max(re_intensity_2)}")
+        print(f"Mean Relative Error Intensity 2: {np.mean(re_intensity_2)}")
+        print(f"Max Relative Error Energy 1: {np.max(re_energy_1)}")
+        print(f"Mean Relative Error Energy 1: {np.mean(re_energy_1)}")
+        print(f"Max Relative Error Energy 2: {np.max(re_energy_2)}")
+        print(f"Mean Relative Error Energy 2: {np.mean(re_energy_2)}\n")
+
+        plt.plot(linear['time'], re_intensity_1, label="Relative Error Intensity 1")
+        plt.plot(linear['time'], re_intensity_2, label="Relative Error Intensity 2")
+        plt.plot(linear['time'], re_energy_1, label="Relative Error Energy 1")
+        plt.plot(linear['time'], re_energy_2, label="Relative Error Energy 2")
+        plt.title("Relative Error Plot")
+        plt.xlabel("Time - ct (cm)")
+        plt.ylabel("Relative ERror")
+        plt.xscale("log")
+        plt.yscale("log")
+        plt.grid(b=True, which="both", axis="both")
+        plt.legend(loc="best")
+        plt.tight_layout()
+        plt.savefig(f"{PLOTPATH}/infcell_2_relative_error.png")
+        plt.cla()
+        plt.clf()
+    except Exception as e:
+        raise e
 
     try:
         infcell_3 = pd.read_csv(f"{CSVPATH}/infcell_3.csv")
@@ -190,8 +231,49 @@ def main():
         plt.savefig(f"{PLOTPATH}/infcell_3_temperature_linear.png")
         plt.cla()
         plt.clf()
-    except:
-        pass
+
+        arr_len = len(linear['time'])
+
+        re_intensity_1 = np.zeros(arr_len)
+        re_intensity_2 = np.zeros(arr_len)
+        re_energy_1 = np.zeros(arr_len)
+        re_energy_2 = np.zeros(arr_len)
+        for index, intensity in enumerate(linear['intensity1']):
+            re_intensity_1[index] = np.abs(infcell_3['intensity1'][index] - intensity) / intensity
+        for index, intensity in enumerate(linear['intensity2']):
+            re_intensity_2[index] = np.abs(infcell_3['intensity2'][index] - intensity) / intensity
+        for index, energy in enumerate(linear['energy1']):
+            re_energy_1[index] = np.abs(infcell_3['temp1'][index] - energy) / energy
+        for index, energy in enumerate(linear['energy2']):
+            re_energy_2[index] = np.abs(infcell_3['temp2'][index] - energy) / energy
+
+        print("INFCELL_3:")
+        print(f"Max Relative Error Intensity 1: {np.max(re_intensity_1)}")
+        print(f"Mean Relative Error Intensity 1: {np.mean(re_intensity_1)}")
+        print(f"Max Relative Error Intensity 2: {np.max(re_intensity_2)}")
+        print(f"Mean Relative Error Intensity 2: {np.mean(re_intensity_2)}")
+        print(f"Max Relative Error Energy 1: {np.max(re_energy_1)}")
+        print(f"Mean Relative Error Energy 1: {np.mean(re_energy_1)}")
+        print(f"Max Relative Error Energy 2: {np.max(re_energy_2)}")
+        print(f"Mean Relative Error Energy 2: {np.mean(re_energy_2)}\n")
+
+        plt.plot(linear['time'], re_intensity_1, label="Relative Error Intensity 1")
+        plt.plot(linear['time'], re_intensity_2, label="Relative Error Intensity 2")
+        plt.plot(linear['time'], re_energy_1, label="Relative Error Energy 1")
+        plt.plot(linear['time'], re_energy_2, label="Relative Error Energy 2")
+        plt.title("Relative Error Plot")
+        plt.xlabel("Time - ct (cm)")
+        plt.ylabel("Relative ERror")
+        plt.xscale("log")
+        plt.yscale("log")
+        plt.grid(b=True, which="both", axis="both")
+        plt.legend(loc="best")
+        plt.tight_layout()
+        plt.savefig(f"{PLOTPATH}/infcell_3_relative_error.png")
+        plt.cla()
+        plt.clf()
+    except Exception as e:
+        raise e
 
 if __name__ == '__main__':
     main()

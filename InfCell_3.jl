@@ -143,7 +143,7 @@ function main()::Nothing
 
         # Track energy balance
         tot_eng = @inbounds @fastmath (intensity_1[index] * c.vol_1 / c.sol) + (intensity_2[index] * c.vol_2 / c.sol) + (temperature_1[index] * c.dens_1 * c_v_1 * c.vol_1) + (temperature_2[index] * c.dens_2 * c_v_2 * c.vol_2)
-        push(energy_balance, abs(tot_eng - prev_eng))
+        @fastmath push(energy_balance, abs(tot_eng - prev_eng))
 
         # Contribute new intensity value
         local normal_energy_1::Float64 = @inbounds @fastmath (intensity_1[index] * (c.vol_1 / c.sol)) / convert(Float64, particles_m1)

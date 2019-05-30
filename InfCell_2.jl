@@ -141,7 +141,7 @@ function main()::Nothing
 
         # Track energy balance
         tot_eng = @inbounds @fastmath (intensity_1[index] * c.vol_1 / c.sol) + (intensity_2[index] * c.vol_2 / c.sol) + (temperature_1[index] * c.dens_1 * c_v(c.spec_heat_1, temperature_1[index]) * c.vol_1) + (temperature_2[index] * c.dens_2 * c_v(c.spec_heat_2, temperature_2[index]) * c.vol_2)
-        push(energy_balance, abs(tot_eng - prev_eng))
+        @fastmath push(energy_balance, abs(tot_eng - prev_eng))
     end  # Time loop
 
     println("Average energy balance: ", mean(energy_balance))

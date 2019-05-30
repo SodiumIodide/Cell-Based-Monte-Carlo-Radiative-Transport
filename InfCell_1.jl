@@ -5,17 +5,16 @@ using Random
 using ProgressMeter
 using CSV
 using DataFrames
-using Suppressor
 
-@suppress include("Constants.jl")
+include("Constants.jl")
 using .Constants
 const c = Constants
 
-@suppress include("PhysicsFunctions.jl")
+include("PhysicsFunctions.jl")
 using .PhysicsFunctions
-@suppress include("RunningStatistics.jl")
+include("RunningStatistics.jl")
 using .RunningStatistics
-@suppress include("Common.jl")
+include("Common.jl")
 using .Common
 
 set_zero_subnormals(true)
@@ -25,7 +24,7 @@ function energy_deposition!(particle::Particle, dist::Float64, temp::Float64, vo
     local result_dep::Float64 = @fastmath particle.weight * (1.0 - exp(-opacity * dist))
     @fastmath particle.weight -= result_dep
 
-    local result_em::Float64 = @fastmath opacity * c.arad * temp^4 * vol * dist
+    local result_em::Float64 = @fastmath opacity * c.arad * temp^4 * vol * dist / c.num_particles
 
     return (result_dep, result_em)
 end
@@ -71,8 +70,8 @@ function main()::Nothing
             @fastmath num_2 += 1
         end
     end
-    local init_weight_1::Float64 = @fastmath c.init_intensity * (c.vol_1 / c.sol) / convert(Float64, c.num_particles)
-    local init_weight_2::Float64 = @fastmath c.init_intensity * (c.vol_2 / c.sol) / convert(Float64, c.num_particles)
+    local init_weight_1::Float64 = @fastmath c.init_intensity * (c.vol_1 / c.sol) / convert(Float64, num_1)
+    local init_weight_2::Float64 = @fastmath c.init_intensity * (c.vol_2 / c.sol) / convert(Float64, num_1)
     @simd for particle in particles
         if @fastmath (particle.mat_num == 1)
             particle.weight = init_weight_1
@@ -139,8 +138,8 @@ function main()::Nothing
 
         #@fastmath energy_dep_1 /= c.volfrac_1
         #@fastmath energy_dep_2 /= c.volfrac_2
-        @fastmath energy_em_1 /= (convert(Float64, particles_m1))
-        @fastmath energy_em_2 /= (convert(Float64, particles_m2))
+        #@fastmath energy_em_1 /= (convert(Float64, particles_m1))
+        #@fastmath energy_em_2 /= (convert(Float64, particles_m2))
 
         # Update intensity values based on deposition and emission
         @inbounds @fastmath intensity_1[index] = intensity_1[index - 1] + (energy_em_1 - energy_dep_1) * (c.sol / c.vol_1)
@@ -152,11 +151,11 @@ function main()::Nothing
 
         # Track energy balance
         tot_eng = @inbounds @fastmath (intensity_1[index] * c.vol_1 / c.sol) + (intensity_2[index] * c.vol_2 / c.sol) + (temperature_1[index] * c.dens_1 * c_v_1 * c.vol_1) + (temperature_2[index] * c.dens_2 * c_v_2 * c.vol_2)
-        push(energy_balance, abs(tot_eng - prev_eng))
+        @fastmath push(energy_balance, @fastmath abs(tot_eng - prev_eng))
 
         # Renormalize
-        local normal_energy_1::Float64 = @inbounds @fastmath intensity_1[index] * (c.sol / c.vol_1) / convert(Float64, c.num_particles)
-        local normal_energy_2::Float64 = @inbounds @fastmath intensity_2[index] * (c.sol / c.vol_2) / convert(Float64, c.num_particles)
+        local normal_energy_1::Float64 = @inbounds @fastmath intensity_1[index] * (c.sol / c.vol_1) / convert(Float64, particles_m1)
+        local normal_energy_2::Float64 = @inbounds @fastmath intensity_2[index] * (c.sol / c.vol_2) / convert(Float64, particles_m2)
         @simd for particle in particles
             if @fastmath (particle.mat_num == 1)
                 particle.weight = normal_energy_1

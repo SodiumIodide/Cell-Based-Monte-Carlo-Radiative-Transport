@@ -5,7 +5,7 @@ module Constants
 
     # Histogram and problem parameters
     global const num_t = convert(Int64, 1e4)
-    global const num_particles = convert(Int64, 1e4)
+    global const num_particles = convert(Int64, 1e3)
 
     # Geometry definitions (assume minimum values are at origin)
     global const x_len = 1e-1  # cm

@@ -113,7 +113,7 @@ def main():
     except Exception as e:
         pass
 
-    try:
+""" try:
         infcell_2 = pd.read_csv(f"{CSVPATH}/infcell_2.csv")
         linear = pd.read_csv(f"{CSVPATH}/analytic_linear.csv")
 
@@ -273,7 +273,7 @@ def main():
         plt.cla()
         plt.clf()
     except Exception as e:
-        raise e
+        raise e """
 
 if __name__ == '__main__':
     main()

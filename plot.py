@@ -6,6 +6,7 @@ import pandas as pd
 
 CSVPATH = "./out"
 PLOTPATH = "./plot"
+ERRPATH = f"{PLOTPATH}/error"
 
 def main():
     try:
@@ -130,7 +131,7 @@ def main():
         plt.grid(b=True, which="both", axis="both")
         plt.legend(loc="best")
         plt.tight_layout()
-        plt.savefig(f"{PLOTPATH}/infcell_1_intensity_linear.png")
+        plt.savefig(f"{ERRPATH}/infcell_1_intensity_linear.png")
         plt.cla()
         plt.clf()
 
@@ -147,7 +148,7 @@ def main():
         plt.grid(b=True, which="both", axis="both")
         plt.legend(loc="best")
         plt.tight_layout()
-        plt.savefig(f"{PLOTPATH}/infcell_1_temperature_linear.png")
+        plt.savefig(f"{ERRPATH}/infcell_1_temperature_linear.png")
         plt.cla()
         plt.clf()
 
@@ -188,7 +189,7 @@ def main():
         plt.grid(b=True, which="both", axis="both")
         plt.legend(loc="best")
         plt.tight_layout()
-        plt.savefig(f"{PLOTPATH}/infcell_1_relative_error.png")
+        plt.savefig(f"{ERRPATH}/infcell_1_relative_error.png")
         plt.cla()
         plt.clf()
     except Exception as e:
@@ -211,7 +212,7 @@ def main():
         plt.grid(b=True, which="both", axis="both")
         plt.legend(loc="best")
         plt.tight_layout()
-        plt.savefig(f"{PLOTPATH}/infcell_2_intensity_linear.png")
+        plt.savefig(f"{ERRPATH}/infcell_2_intensity_linear.png")
         plt.cla()
         plt.clf()
 
@@ -228,7 +229,7 @@ def main():
         plt.grid(b=True, which="both", axis="both")
         plt.legend(loc="best")
         plt.tight_layout()
-        plt.savefig(f"{PLOTPATH}/infcell_2_temperature_linear.png")
+        plt.savefig(f"{ERRPATH}/infcell_2_temperature_linear.png")
         plt.cla()
         plt.clf()
 
@@ -269,7 +270,7 @@ def main():
         plt.grid(b=True, which="both", axis="both")
         plt.legend(loc="best")
         plt.tight_layout()
-        plt.savefig(f"{PLOTPATH}/infcell_2_relative_error.png")
+        plt.savefig(f"{ERRPATH}/infcell_2_relative_error.png")
         plt.cla()
         plt.clf()
     except Exception as e:
@@ -292,7 +293,7 @@ def main():
         plt.grid(b=True, which="both", axis="both")
         plt.legend(loc="best")
         plt.tight_layout()
-        plt.savefig(f"{PLOTPATH}/infcell_3_intensity_linear.png")
+        plt.savefig(f"{ERRPATH}/infcell_3_intensity_linear.png")
         plt.cla()
         plt.clf()
 
@@ -309,7 +310,7 @@ def main():
         plt.grid(b=True, which="both", axis="both")
         plt.legend(loc="best")
         plt.tight_layout()
-        plt.savefig(f"{PLOTPATH}/infcell_3_temperature_linear.png")
+        plt.savefig(f"{ERRPATH}/infcell_3_temperature_linear.png")
         plt.cla()
         plt.clf()
 
@@ -350,7 +351,7 @@ def main():
         plt.grid(b=True, which="both", axis="both")
         plt.legend(loc="best")
         plt.tight_layout()
-        plt.savefig(f"{PLOTPATH}/infcell_3_relative_error.png")
+        plt.savefig(f"{ERRPATH}/infcell_3_relative_error.png")
         plt.cla()
         plt.clf()
     except Exception as e:

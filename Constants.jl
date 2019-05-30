@@ -4,7 +4,7 @@ module Constants
     set_zero_subnormals(true)
 
     # Histogram and problem parameters
-    global const num_t = convert(Int64, 1e5)
+    global const num_t = convert(Int64, 1e4)
     global const num_particles = convert(Int64, 1e3)
 
     # Geometry definitions (assume minimum values are at origin)
@@ -43,6 +43,10 @@ module Constants
     global const opacity_2 = 5.0  # cm^-1
     global const spec_heat_1 = 1.0  # erg/g-eV
     global const spec_heat_2 = 1.0  # erg/g-eV
+
+    # Problem volumes
     global const volfrac_1 = chord_1 / (chord_1 + chord_2)
     global const volfrac_2 = 1.0 - volfrac_1
+    global const vol_1 = volfrac_1 * vol  # cm^3
+    global const vol_2 = volfrac_2 * vol  # cm^3
 end

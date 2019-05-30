@@ -9,7 +9,7 @@ using Suppressor
 
 @suppress include("Constants.jl")
 using .Constants
-c = Constants
+const c = Constants
 
 @suppress include("PhysicsFunctions.jl")
 using .PhysicsFunctions
@@ -42,7 +42,6 @@ function deposit_energy!(particle::Particle, dep_1::Float64, dep_2::Float64, em_
         @fastmath dep_2 += result_dep
         @fastmath em_2 += result_em
     end
-    @fastmath particle.t_remaining -= distance / c.sol
 
     return (dep_1, dep_2, em_1, em_2)
 end
@@ -102,6 +101,9 @@ function main()::Nothing
         prev_eng = tot_eng
         # Inner loop - particles
         @simd for particle in particles
+            if (isnan(particle.weight))
+                error("NaN encountered")
+            end
             particle.t_remaining = c.delta_t  # s
             # Per particle loop - propagate data in time-step
             while @fastmath (particle.t_remaining > 0.0)
@@ -138,8 +140,8 @@ function main()::Nothing
 
         #@fastmath energy_dep_1 /= c.volfrac_1
         #@fastmath energy_dep_2 /= c.volfrac_2
-        #@fastmath energy_em_1 /= c.volfrac_1
-        #@fastmath energy_em_2 /= c.volfrac_2
+        @fastmath energy_em_1 /= (convert(Float64, c.num_particles) * c.volfrac_1)
+        @fastmath energy_em_2 /= (convert(Float64, c.num_particles) * c.volfrac_2)
 
         # Update intensity values based on deposition and emission
         @inbounds @fastmath intensity_1[index] = intensity_1[index - 1] + (energy_em_1 - energy_dep_1) * (c.sol / c.vol)
@@ -150,7 +152,7 @@ function main()::Nothing
         @inbounds temperature_2[index] = @fastmath temperature_2[index - 1] + (energy_dep_2 - energy_em_2) / (c_v_2 * c.dens_2 * c.vol)
 
         # Track energy balance
-        tot_eng = @fastmath (intensity_1[index] * c.vol / c.sol) * c.volfrac_1 + (intensity_2[index] * c.vol / c.sol) * c.volfrac_2 + (temperature_1[index] * c.dens_1 * c_v_1 * c.vol) * c.volfrac_1 + (temperature_2[index] * c.dens_2 * c_v_2 * c.vol) * c.volfrac_2
+        tot_eng = @inbounds @fastmath (intensity_1[index] * c.vol / c.sol) * c.volfrac_1 + (intensity_2[index] * c.vol / c.sol) * c.volfrac_2 + (temperature_1[index] * c.dens_1 * c_v_1 * c.vol) * c.volfrac_1 + (temperature_2[index] * c.dens_2 * c_v_2 * c.vol) * c.volfrac_2
         push(energy_balance, tot_eng - prev_eng)
 
         # Renormalize

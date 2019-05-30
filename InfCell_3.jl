@@ -9,7 +9,7 @@ using CSV
 using DataFrames
 
 include("Constants.jl")
-c = Constants
+const c = Constants
 
 include("PhysicsFunctions.jl")
 using .PhysicsFunctions
@@ -33,7 +33,6 @@ function deposit_energy!(particle::Particle, accum_1::Float64, accum_2::Float64,
     else
         @fastmath accum_2 += energy_deposition!(particle, distance, temp2)
     end
-    @fastmath particle.t_remaining -= distance / c.sol
 
     return (accum_1, accum_2)
 end
@@ -64,8 +63,8 @@ function main()::Nothing
             @fastmath num_2 += 1
         end
     end
-    local init_weight_1::Float64 = @fastmath c.init_intensity * (c.vol / c.sol) / convert(Float64, num_1)  # erg
-    local init_weight_2::Float64 = @fastmath c.init_intensity * (c.vol / c.sol) / convert(Float64, num_2)  # erg
+    local init_weight_1::Float64 = @fastmath c.init_intensity * (c.vol_1 / c.sol) / convert(Float64, num_1)  # erg
+    local init_weight_2::Float64 = @fastmath c.init_intensity * (c.vol_2 / c.sol) / convert(Float64, num_2)  # erg
     @simd for particle in particles
         if @fastmath (particle.mat_num == 1)
             particle.weight = init_weight_1
@@ -91,6 +90,9 @@ function main()::Nothing
         prev_eng = tot_eng
         # Inner loop - particles
         @simd for particle in particles
+            if (isnan(particle.weight))
+                error("NaN encountered")
+            end
             particle.t_remaining = c.delta_t  # s
             # Per particle loop - propagate data in time-step
             while @fastmath (particle.t_remaining > 0.0)
@@ -128,8 +130,8 @@ function main()::Nothing
         local c_v_2::Float64 = @inbounds c_v(c.spec_heat_2, temperature_2[index - 1])
 
         # Calculate emission terms
-        local energy_em_1::Float64 = @inbounds @fastmath c.sol * c.arad * sigma_a_1 * temperature_1[index - 1]^4 * c.vol * c.delta_t
-        local energy_em_2::Float64 = @inbounds @fastmath c.sol * c.arad * sigma_a_2 * temperature_2[index - 1]^4 * c.vol * c.delta_t
+        local energy_em_1::Float64 = @inbounds @fastmath c.sol * c.arad * sigma_a_1 * temperature_1[index - 1]^4 * c.vol_1 * c.delta_t
+        local energy_em_2::Float64 = @inbounds @fastmath c.sol * c.arad * sigma_a_2 * temperature_2[index - 1]^4 * c.vol_2 * c.delta_t
 
         #@fastmath energy_dep_1 /= c.volfrac_1
         #@fastmath energy_dep_2 /= c.volfrac_2
@@ -137,20 +139,20 @@ function main()::Nothing
         #@fastmath energy_em_2 *= c.volfrac_2
 
         # Update intensity values based on deposition and emission
-        @inbounds intensity_1[index] = @fastmath intensity_1[index - 1] + (energy_em_1 - energy_dep_1) * (c.sol / c.vol)
-        @inbounds intensity_2[index] = @fastmath intensity_2[index - 1] + (energy_em_2 - energy_dep_2) * (c.sol / c.vol)
+        @inbounds intensity_1[index] = @fastmath intensity_1[index - 1] + (energy_em_1 - energy_dep_1) * (c.sol / c.vol_1)
+        @inbounds intensity_2[index] = @fastmath intensity_2[index - 1] + (energy_em_2 - energy_dep_2) * (c.sol / c.vol_2)
 
         # Calculate temperature change based on intensity values
-        @inbounds temperature_1[index] = @fastmath temperature_1[index - 1] + (energy_dep_1 - energy_em_1) / (c_v_1 * c.dens_1 * c.vol)
-        @inbounds temperature_2[index] = @fastmath temperature_2[index - 1] + (energy_dep_2 - energy_em_2) / (c_v_2 * c.dens_2 * c.vol)
+        @inbounds temperature_1[index] = @fastmath temperature_1[index - 1] + (energy_dep_1 - energy_em_1) / (c_v_1 * c.dens_1 * c.vol_1)
+        @inbounds temperature_2[index] = @fastmath temperature_2[index - 1] + (energy_dep_2 - energy_em_2) / (c_v_2 * c.dens_2 * c.vol_2)
 
         # Track energy balance
-        tot_eng = @fastmath (intensity_1[index] * c.vol / c.sol) * c.volfrac_1 + (intensity_2[index] * c.vol / c.sol) * c.volfrac_2 + (temperature_1[index] * c.dens_1 * c_v_1 * c.vol) * c.volfrac_1 + (temperature_2[index] * c.dens_2 * c_v_2 * c.vol) * c.volfrac_2
+        tot_eng = @inbounds @fastmath (intensity_1[index] * c.vol / c.sol) * c.volfrac_1 + (intensity_2[index] * c.vol / c.sol) * c.volfrac_2 + (temperature_1[index] * c.dens_1 * c_v_1 * c.vol) * c.volfrac_1 + (temperature_2[index] * c.dens_2 * c_v_2 * c.vol) * c.volfrac_2
         push(energy_balance, tot_eng - prev_eng)
 
-        # Renormalize
-        local normal_energy_1::Float64 = @inbounds @fastmath intensity_1[index] * (c.vol / c.sol) / convert(Float64, particles_m1)
-        local normal_energy_2::Float64 = @inbounds @fastmath intensity_2[index] * (c.vol / c.sol) / convert(Float64, particles_m2)
+        # Contribute new intensity value
+        local normal_energy_1::Float64 = @inbounds @fastmath (intensity_1[index] * (c.vol / c.sol)) / convert(Float64, particles_m1) * c.volfrac_1
+        local normal_energy_2::Float64 = @inbounds @fastmath (intensity_2[index] * (c.vol / c.sol)) / convert(Float64, particles_m2) * c.volfrac_2
         @simd for particle in particles
             if @fastmath (particle.mat_num == 1)
                 particle.weight = normal_energy_1

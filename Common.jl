@@ -1,5 +1,5 @@
 module Common
-    export Particle, CollisionType, isotropic_uvw, generate_material, generate_position, switch_material!, dist_to_boundary, dist_to_census, dist_to_transition, move_particle!, boundary_hit!
+    export Particle, CollisionType, isotropic_uvw, random_material, get_material_properties, generate_material, generate_position, update_material!, switch_material!, dist_to_boundary, dist_to_census, dist_to_transition, move_particle!, boundary_hit!
 
     using ..Random
 
@@ -60,15 +60,23 @@ module Common
     end
 
     @inline function get_material_properties(mat_num::Int64)::NTuple{4, Float64}
-        if (mat_num == 1)
+        if @fastmath (mat_num == 1)
             return (c.opacity_1, c.spec_heat_1, c.dens_1, c.chord_1)
         else
             return (c.opacity_2, c.spec_heat_2, c.dens_2, c.chord_2)
         end
     end
 
-    @inline function generate_material(gen::MersenneTwister)::Tuple{Int32, Float64, Float64, Float64, Float64}
+    @inline function random_material(gen::MersenneTwister)::Int64
         if @fastmath (rand(gen) < c.volfrac_1)
+            return 1
+        else
+            return 2
+        end
+    end
+
+    @inline function generate_material(gen::MersenneTwister)::Tuple{Int64, Float64, Float64, Float64, Float64}
+        if @fastmath (random_material(gen) == 1)
             return (1, get_material_properties(1)...)
         else
             return (2, get_material_properties(2)...)
@@ -79,19 +87,29 @@ module Common
         return @fastmath (c.x_len * rand(gen), c.y_len * rand(gen), c.z_len * rand(gen))
     end
 
-    function switch_material!(particle::Particle)::Nothing
-        if (particle.mat_num == 1)
-            particle.mat_num = 2
-            particle.opacity = c.opacity_2
-            particle.spec_heat = c.spec_heat_2
-            particle.dens = c.dens_2
-            particle.chord = c.chord_2
-        else
+    function update_material!(particle::Particle, mat_num::Int64)::Nothing
+        if (mat_num == 1)
             particle.mat_num = 1
             particle.opacity = c.opacity_1
             particle.spec_heat = c.spec_heat_1
             particle.dens = c.dens_1
             particle.chord = c.chord_1
+        else
+            particle.mat_num = 2
+            particle.opacity = c.opacity_2
+            particle.spec_heat = c.spec_heat_2
+            particle.dens = c.dens_2
+            particle.chord = c.chord_2
+        end
+
+        return nothing
+    end
+
+    function switch_material!(particle::Particle)::Nothing
+        if (particle.mat_num == 1)
+            update_material!(particle, 2)
+        else
+            update_material!(particle, 1)
         end
 
         return nothing
@@ -137,6 +155,7 @@ module Common
         @fastmath particle.x_loc += distance * particle.u_val
         @fastmath particle.y_loc += distance * particle.v_val
         @fastmath particle.z_loc += distance * particle.w_val
+        @fastmath particle.t_remaining -= distance / c.sol
 
         return nothing
     end

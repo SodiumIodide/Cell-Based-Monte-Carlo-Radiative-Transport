@@ -93,10 +93,14 @@ function main()::Nothing
 
     # Outer loop - times
     @showprogress 1 for index=2:@fastmath(c.num_t + 1)
-        local energy_dep_1::Float64 = 0.0
-        local energy_dep_2::Float64 = 0.0
-        local energy_em_1::Float64 = 0.0
-        local energy_em_2::Float64 = 0.0
+        local energy_dep_i_1::Float64 = 0.0
+        local energy_dep_i_2::Float64 = 0.0
+        local energy_dep_t_1::Float64 = 0.0
+        local energy_dep_t_2::Float64 = 0.0
+        local energy_em_i_1::Float64 = 0.0
+        local energy_em_i_2::Float64 = 0.0
+        local energy_em_t_1::Float64 = 0.0
+        local energy_em_t_2::Float64 = 0.0
         local particles_m1::Int64 = 0
         local particles_m2::Int64 = 0
         local energy_leftover_1::Float64 = 0.0

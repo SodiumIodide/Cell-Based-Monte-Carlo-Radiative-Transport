@@ -15,7 +15,7 @@ include("PhysicsFunctions.jl")
 using .PhysicsFunctions
 include("RunningStatistics.jl")
 using .RunningStatistics
-include("Common_Legacy.jl")
+include("Common.jl")
 using .Common
 
 function energy_deposition!(particle::Particle, dist::Float64, temp::Float64)::Float64

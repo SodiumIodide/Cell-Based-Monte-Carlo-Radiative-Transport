@@ -55,7 +55,7 @@ function main()::Nothing
 
     # All initial particles have the same weight in a homogeneous cell
     local particles::Vector{Particle} = [
-        Particle(0.0, 0.0, isotropic_uvw(generator)..., generate_position(generator)..., generate_material(generator)..., c.delta_t)
+        Particle(0.0, isotropic_uvw(generator)..., generate_position(generator)..., generate_material(generator)..., c.delta_t)
         for i=1:c.num_particles
     ]
 
@@ -69,17 +69,13 @@ function main()::Nothing
             @fastmath num_2 += 1
         end
     end
-    local init_weight_i_1::Float64 = @fastmath c.init_intensity * (c.vol_1 / c.sol) / convert(Float64, num_1)
-    local init_weight_i_2::Float64 = @fastmath c.init_intensity * (c.vol_2 / c.sol) / convert(Float64, num_2)
-    local init_weight_t_1::Float64 = @fastmath c.init_temp^4 * c.sol * c.arad * sigma_a(c.opacity_1, c.init_temp) * c.vol_1 * c.delta_t
-    local init_weight_t_2::Float64 = @fastmath c.init_temp^4 * c.sol * c.arad * sigma_a(c.opacity_2, c.init_temp) * c.vol_2 * c.delta_t
+    local init_weight_1::Float64 = @fastmath c.init_intensity * (c.vol_1 / c.sol) / convert(Float64, num_1)
+    local init_weight_2::Float64 = @fastmath c.init_intensity * (c.vol_2 / c.sol) / convert(Float64, num_2)
     @simd for particle in particles
         if @fastmath (particle.mat_num == 1)
-            particle.weight_i = init_weight_i_1
-            particle.weight_t = init_weight_t_1
+            particle.weight = init_weight_1
         else
-            particle.weight_i = init_weight_i_2
-            particle.weight_t = init_weight_t_2
+            particle.weight = init_weight_2
         end
     end
 
@@ -93,14 +89,10 @@ function main()::Nothing
 
     # Outer loop - times
     @showprogress 1 for index=2:@fastmath(c.num_t + 1)
-        local energy_dep_i_1::Float64 = 0.0
-        local energy_dep_i_2::Float64 = 0.0
-        local energy_dep_t_1::Float64 = 0.0
-        local energy_dep_t_2::Float64 = 0.0
-        local energy_em_i_1::Float64 = 0.0
-        local energy_em_i_2::Float64 = 0.0
-        local energy_em_t_1::Float64 = 0.0
-        local energy_em_t_2::Float64 = 0.0
+        local energy_dep_1::Float64 = 0.0
+        local energy_dep_2::Float64 = 0.0
+        local energy_em_1::Float64 = 0.0
+        local energy_em_2::Float64 = 0.0
         local particles_m1::Int64 = 0
         local particles_m2::Int64 = 0
         local energy_leftover_1::Float64 = 0.0

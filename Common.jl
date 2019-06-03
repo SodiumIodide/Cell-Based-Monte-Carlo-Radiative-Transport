@@ -10,8 +10,7 @@ module Common
 
     mutable struct Particle
         # Weight value
-        weight_i::Float64
-        weight_t::Float64
+        weight::Float64
 
         # Angle data
         u_val::Float64

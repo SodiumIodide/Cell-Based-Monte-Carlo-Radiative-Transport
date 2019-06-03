@@ -1,0 +1,35 @@
+10^4:
+
+INFCELL_1:
+Max Relative Error Intensity 1: 0.28272021151370574
+Mean Relative Error Intensity 1: 0.05940598812263646
+Max Relative Error Intensity 2: 0.0887756184849384
+Mean Relative Error Intensity 2: 0.028876720691637034
+Max Relative Error Energy 1: 19.14143595140192
+Mean Relative Error Energy 1: 0.32104241570866837
+Max Relative Error Energy 2: 0.6894627404338342
+Mean Relative Error Energy 2: 0.03456673408722956
+
+10^5:
+
+INFCELL_1:
+Max Relative Error Intensity 1: 0.2463400255373465
+Mean Relative Error Intensity 1: 0.05695169486142557
+Max Relative Error Intensity 2: 0.0658170359779212
+Mean Relative Error Intensity 2: 0.011588798274894443
+Max Relative Error Energy 1: 20.332671372130292
+Mean Relative Error Energy 1: 0.3319265172158595
+Max Relative Error Energy 2: 0.6597516298186185
+Mean Relative Error Energy 2: 0.015350037063708532
+
+10^6:
+
+INFCELL_1:
+Max Relative Error Intensity 1: 0.2570372479816312
+Mean Relative Error Intensity 1: 0.05752091280287325
+Max Relative Error Intensity 2: 0.08108705471751856
+Mean Relative Error Intensity 2: 0.011917864762877163
+Max Relative Error Energy 1: 20.46786991789456
+Mean Relative Error Energy 1: 0.3324259003198427
+Max Relative Error Energy 2: 0.6564824011327652
+Mean Relative Error Energy 2: 0.01564231498316681

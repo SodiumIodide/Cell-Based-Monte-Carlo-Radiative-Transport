@@ -4,7 +4,7 @@ module Constants
     set_zero_subnormals(true)
 
     # Histogram and problem parameters
-    global const num_t = convert(Int64, 1e5)
+    global const num_t = convert(Int64, 1e4)
     global const num_particles = convert(Int64, 1e3)
 
     # Geometry definitions (assume minimum values are at origin)

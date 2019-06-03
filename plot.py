@@ -6,7 +6,7 @@ import pandas as pd
 
 CSVPATH = "./out"
 PLOTPATH = "./plot"
-ERRPATH = f"{PLOTPATH}/error"
+ERRPATH = f"{PLOTPATH}/error_v2"
 
 def main():
     try:
@@ -114,7 +114,7 @@ def main():
     except Exception as e:
         pass
 
-"""     try:
+    try:
         infcell_1 = pd.read_csv(f"{CSVPATH}/infcell_1.csv")
         linear = pd.read_csv(f"{CSVPATH}/analytic_linear.csv")
 
@@ -131,7 +131,7 @@ def main():
         plt.grid(b=True, which="both", axis="both")
         plt.legend(loc="best")
         plt.tight_layout()
-        plt.savefig(f"{ERRPATH}/infcell_1_intensity_linear.png")
+        plt.savefig(f"{PLOTPATH}/infcell_1_intensity_linear.png")
         plt.cla()
         plt.clf()
 
@@ -148,11 +148,11 @@ def main():
         plt.grid(b=True, which="both", axis="both")
         plt.legend(loc="best")
         plt.tight_layout()
-        plt.savefig(f"{ERRPATH}/infcell_1_temperature_linear.png")
+        plt.savefig(f"{PLOTPATH}/infcell_1_temperature_linear.png")
         plt.cla()
         plt.clf()
 
-        arr_len = len(linear['time'])
+        """ arr_len = len(linear['time'])
 
         re_intensity_1 = np.zeros(arr_len)
         re_intensity_2 = np.zeros(arr_len)
@@ -191,7 +191,7 @@ def main():
         plt.tight_layout()
         plt.savefig(f"{ERRPATH}/infcell_1_relative_error.png")
         plt.cla()
-        plt.clf()
+        plt.clf() """
     except Exception as e:
         raise e
 
@@ -212,7 +212,7 @@ def main():
         plt.grid(b=True, which="both", axis="both")
         plt.legend(loc="best")
         plt.tight_layout()
-        plt.savefig(f"{ERRPATH}/infcell_2_intensity_linear.png")
+        plt.savefig(f"{PLOTPATH}/infcell_2_intensity_linear.png")
         plt.cla()
         plt.clf()
 
@@ -229,11 +229,11 @@ def main():
         plt.grid(b=True, which="both", axis="both")
         plt.legend(loc="best")
         plt.tight_layout()
-        plt.savefig(f"{ERRPATH}/infcell_2_temperature_linear.png")
+        plt.savefig(f"{PLOTPATH}/infcell_2_temperature_linear.png")
         plt.cla()
         plt.clf()
 
-        arr_len = len(linear['time'])
+        """ arr_len = len(linear['time'])
 
         re_intensity_1 = np.zeros(arr_len)
         re_intensity_2 = np.zeros(arr_len)
@@ -272,7 +272,7 @@ def main():
         plt.tight_layout()
         plt.savefig(f"{ERRPATH}/infcell_2_relative_error.png")
         plt.cla()
-        plt.clf()
+        plt.clf() """
     except Exception as e:
         raise e
 
@@ -293,7 +293,7 @@ def main():
         plt.grid(b=True, which="both", axis="both")
         plt.legend(loc="best")
         plt.tight_layout()
-        plt.savefig(f"{ERRPATH}/infcell_3_intensity_linear.png")
+        plt.savefig(f"{PLOTPATH}/infcell_3_intensity_linear.png")
         plt.cla()
         plt.clf()
 
@@ -310,11 +310,11 @@ def main():
         plt.grid(b=True, which="both", axis="both")
         plt.legend(loc="best")
         plt.tight_layout()
-        plt.savefig(f"{ERRPATH}/infcell_3_temperature_linear.png")
+        plt.savefig(f"{PLOTPATH}/infcell_3_temperature_linear.png")
         plt.cla()
         plt.clf()
 
-        arr_len = len(linear['time'])
+        """ arr_len = len(linear['time'])
 
         re_intensity_1 = np.zeros(arr_len)
         re_intensity_2 = np.zeros(arr_len)
@@ -353,9 +353,11 @@ def main():
         plt.tight_layout()
         plt.savefig(f"{ERRPATH}/infcell_3_relative_error.png")
         plt.cla()
-        plt.clf()
+        plt.clf() """
     except Exception as e:
-        raise e """
+        raise e
 
 if __name__ == '__main__':
+    print("Plotting...")
     main()
+    print("Done")

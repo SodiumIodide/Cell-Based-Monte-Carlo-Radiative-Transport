@@ -1,0 +1,21 @@
+10^4:
+
+Max Relative Error Intensity 1: 0.2227708244953702
+Mean Relative Error Intensity 1: 0.051981258844056126
+Max Relative Error Intensity 2: 0.1672167624300256
+Mean Relative Error Intensity 2: 0.048668997262591225
+Max Relative Error Energy 1: 25.32887796473545
+Mean Relative Error Energy 1: 0.41049188645408285
+Max Relative Error Energy 2: 0.6646927898432711
+Mean Relative Error Energy 2: 0.052156313624287784
+
+10^5:
+
+Max Relative Error Intensity 1: 0.15180537446137204
+Mean Relative Error Intensity 1: 0.03445028080630659
+Max Relative Error Intensity 2: 0.04808247569539859
+Mean Relative Error Intensity 2: 0.019507715226736794
+Max Relative Error Energy 1: 26.798118518452632
+Mean Relative Error Energy 1: 0.4054715421787947
+Max Relative Error Energy 2: 0.6228566570797347
+Mean Relative Error Energy 2: 0.023143726122839037

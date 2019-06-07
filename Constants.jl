@@ -4,14 +4,15 @@ module Constants
     set_zero_subnormals(true)
 
     # Histogram and problem parameters
-    global const num_t = convert(Int64, 1e4)
-    global const num_particles = convert(Int64, 1e3)
+    global const num_t = convert(Int64, 1e5)
+    global const num_particles = convert(Int64, 1e4)
+    global const num_particles_add = div(num_particles, convert(Int64, 1e2))
 
     # Geometry definitions (assume minimum values are at origin)
     global const x_len = 1e-1  # cm
     global const y_len = 1e-1  # cm
     global const z_len = 1e-1  # cm
-    global const vol = x_len * y_len * z_len  # cm^3
+    global const vol_cell = x_len * y_len * z_len  # cm^3
 
     # Point source position (at midpoint)
     global const src_x = x_len / 2.0  # cm
@@ -35,18 +36,24 @@ module Constants
     global const t_max = 1e-11  # s
     global const t_init = 0.0  # s
     global const delta_t = (t_max - t_init) / num_t  # s
-    global const chord_1 = 1e-3 / sol  # s
-    global const chord_2 = 5e-3 / sol  # s
-    global const dens_1 = 1.0  # g/cm^3
-    global const dens_2 = 1.0  # g/cm^3
-    global const opacity_1 = 1.0  # cm^-1
-    global const opacity_2 = 5.0  # cm^-1
-    global const spec_heat_1 = 1.0  # erg/g-eV
-    global const spec_heat_2 = 1.0  # erg/g-eV
+    global const chord = vec([
+        1e-3
+        10e-3
+    ]) ./ sol  # s
+    global const dens = vec([
+        1.0
+        1.0
+    ])  # g/cm^3
+    global const opacity = vec([
+        1.0
+        10.0
+    ])  # cm^-1
+    global const spec_heat = vec([
+        1.0
+        1.0
+    ])  # erg/g-eV
 
     # Problem volumes
-    global const volfrac_1 = chord_1 / (chord_1 + chord_2)
-    global const volfrac_2 = 1.0 - volfrac_1
-    global const vol_1 = volfrac_1 * vol  # cm^3
-    global const vol_2 = volfrac_2 * vol  # cm^3
+    global const volfrac = chord ./ sum(chord)
+    global const vol = volfrac .* vol_cell  # cm^3
 end

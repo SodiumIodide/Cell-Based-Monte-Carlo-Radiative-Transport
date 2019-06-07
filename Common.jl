@@ -1,5 +1,5 @@
 module Common
-    export Particle, CollisionType, isotropic_uvw, random_material, get_material_properties, generate_material, generate_position, update_material!, switch_material!, dist_to_boundary, dist_to_census, dist_to_transition, move_particle!, boundary_hit!
+    export Particle, CollisionType, isotropic_uvw, produce_time, map_material, get_material_properties, switch_material!, next_time!, dist_to_boundary, dist_to_census, dist_to_transition, move_particle!, boundary_hit!, build_particle
 
     using ..Random
 
@@ -59,27 +59,19 @@ module Common
         return @fastmath (u_value, isotropic_v(rand(gen), u_value), isotropic_w(rand(gen), u_value))
     end
 
-    @inline function get_material_properties(mat_num::Int64)::NTuple{4, Float64}
-        if @fastmath (mat_num == 1)
-            return (c.opacity_1, c.spec_heat_1, c.dens_1, c.chord_1)
-        else
-            return (c.opacity_2, c.spec_heat_2, c.dens_2, c.chord_2)
-        end
+    @inline function produce_time(rand_num::Float64)::Float64
+        return @fastmath rand_num * c.delta_t
     end
 
-    @inline function random_material(gen::MersenneTwister)::Int64
-        if @fastmath (rand(gen) < c.volfrac_1)
+    @inline function get_material_properties(mat_num::Int64)::NTuple{4, Float64}
+        return @inbounds (c.opacity[mat_num], c.spec_heat[mat_num], c.dens[mat_num], c.chord[mat_num])
+    end
+
+    @inline function map_material(rand_num::Float64)::Int64
+        if @fastmath (rand_num < c.volfrac[1])
             return 1
         else
             return 2
-        end
-    end
-
-    @inline function generate_material(gen::MersenneTwister)::Tuple{Int64, Float64, Float64, Float64, Float64}
-        if @fastmath (random_material(gen) == 1)
-            return (1, get_material_properties(1)...)
-        else
-            return (2, get_material_properties(2)...)
         end
     end
 
@@ -90,16 +82,16 @@ module Common
     function update_material!(particle::Particle, mat_num::Int64)::Nothing
         if (mat_num == 1)
             particle.mat_num = 1
-            particle.opacity = c.opacity_1
-            particle.spec_heat = c.spec_heat_1
-            particle.dens = c.dens_1
-            particle.chord = c.chord_1
+            particle.opacity = @inbounds c.opacity[1]
+            particle.spec_heat = @inbounds c.spec_heat[1]
+            particle.dens = @inbounds c.dens[1]
+            particle.chord = @inbounds c.chord[1]
         else
             particle.mat_num = 2
-            particle.opacity = c.opacity_2
-            particle.spec_heat = c.spec_heat_2
-            particle.dens = c.dens_2
-            particle.chord = c.chord_2
+            particle.opacity = @inbounds c.opacity[2]
+            particle.spec_heat = @inbounds c.spec_heat[2]
+            particle.dens = @inbounds c.dens[2]
+            particle.chord = @inbounds c.chord[2]
         end
 
         return nothing
@@ -111,6 +103,12 @@ module Common
         else
             update_material!(particle, 1)
         end
+
+        return nothing
+    end
+
+    @inline function next_time!(particle::Particle)::Nothing
+        particle.t_remaining = c.delta_t
 
         return nothing
     end
@@ -171,5 +169,9 @@ module Common
         end
     
         return nothing
+    end
+
+    @inline function build_particle(gen::MersenneTwister, mat_num::Int64, weight::Float64, time_left::Float64=c.delta_t)::Particle
+        return Particle(weight, isotropic_uvw(gen)..., generate_position(gen)..., mat_num, get_material_properties(mat_num)..., time_left)
     end
 end

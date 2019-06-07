@@ -11,14 +11,14 @@ module PhysicsFunctions
     end
 
     @inline function c_v(spec_heat_term::Float64, temp::Float64)::Float64
-        return spec_heat_term * temp^3
+        return @fastmath spec_heat_term * temp^3
     end
 
     @inline function energy_from_temp(temp::Float64)::Float64
-        return c.arad * temp^4
+        return @fastmath c.arad * temp^4
     end
 
     @inline function temp_from_energy(eng::Float64)::Float64
-        return (eng / c.arad)^(0.25)
+        return @fastmath (eng / c.arad)^(0.25)
     end
 end

@@ -21,7 +21,7 @@ module Constants
 
     # Iteration condition
     #global const num_say = convert(Int64, num_t / 1e2)
-    global const weight_cutoff = 1e-10
+    global const weight_cutoff = 1e-12
 
     # Physics constants
     global const sol = 29979245800.0  # cm/s
@@ -29,12 +29,12 @@ module Constants
     global const sb_const = 5.6704e-5 * 11604.525^4  # erg/cm^2-s-eV^4
 
     # Initial conditions
-    global const init_intensity = 1e0  # erg/cm^2-s
+    global const init_intensity = 100e0  # erg/cm^2-s
     global const init_temp = 1e0  # eV
     #global const init_temp = (init_intensity / arad / sol)^(1.0 / 4.0)
 
     # Problem physics parameters
-    global const t_max = 1e-17  # s
+    global const t_max = 1e-12  # s
     global const t_init = 0.0  # s
     global const delta_t = (t_max - t_init) / num_t  # s
     global const chord = vec([
@@ -46,7 +46,7 @@ module Constants
         1.0
     ])  # g/cm^3
     global const opacity = vec([
-        1.0
+        10.0
         1.0
     ])  # cm^-1
     global const spec_heat = vec([

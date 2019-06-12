@@ -65,7 +65,7 @@ function main()::Nothing
     @inbounds temperature[1, 1] = temperature[2, 1] = c.init_temp  # eV
 
     # Outer loop - times
-    for index=2:@fastmath(c.num_t + 1)
+    @showprogress 1 for index=2:@fastmath(c.num_t + 1)
         # Track energy balance
         prev_eng = tot_eng
 
@@ -101,7 +101,7 @@ function main()::Nothing
         local energy_cen::Vector{Float64} = zeros(2)
 
         # Inner loop - particles
-        @showprogress 1 for particle in particles
+        for particle in particles
             # Error check
             if (isnan(particle.weight))
                 error("NaN encountered")

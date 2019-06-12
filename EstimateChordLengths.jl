@@ -26,8 +26,8 @@ function main()::Nothing
     particle_1 = com.build_particle(generator, 1, 0.0)
     particle_2 = com.build_particle(generator, 2, 0.0)
 
-    samples_1 = [com.dist_to_transition(generator, particle_1) for p in 1:num_samples]
-    samples_2 = [com.dist_to_transition(generator, particle_2) for p in 1:num_samples]
+    samples_1 = [com.dist_to_transition(generator, particle_1) for p=1:num_samples]
+    samples_2 = [com.dist_to_transition(generator, particle_2) for p=1:num_samples]
 
     lambda_1 = d.fit(d.Exponential, samples_1)
     lambda_2 = d.fit(d.Exponential, samples_2)

@@ -7,7 +7,6 @@ using DataFrames
 using CSV
 
 include("Constants.jl")
-using .Constants
 const c = Constants
 
 function main()::Nothing
@@ -67,10 +66,10 @@ function main()::Nothing
     local times::Vector{Float64} = @fastmath [(x * c.delta_t + c.t_init) * c.sol for x in 1:c.num_t]
 
     # Take the implicit volume fraction into account
-    @fastmath intensity_1 ./= c.volfrac[1]  # erg/cm^2-s
-    @fastmath intensity_2 ./= c.volfrac[2]  # erg/cm^2-s
-    @fastmath energy_1 ./= c.volfrac[1]  # erg/cm^3
-    @fastmath energy_2 ./= c.volfrac[2]  # erg/cm^3
+    @fastmath @inbounds intensity_1 ./= c.volfrac[1]  # erg/cm^2-s
+    @fastmath @inbounds intensity_2 ./= c.volfrac[2]  # erg/cm^2-s
+    @fastmath @inbounds energy_1 ./= c.volfrac[1]  # erg/cm^3
+    @fastmath @inbounds energy_2 ./= c.volfrac[2]  # erg/cm^3
 
     local tabular::DataFrame = DataFrame(time=times, intensity1=intensity_1, energy1=energy_1, intensity2=intensity_2, energy2=energy_2)
 

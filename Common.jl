@@ -56,7 +56,8 @@ module Common
 
     @inline function isotropic_uvw(gen::MersenneTwister)::NTuple{3, Float64}
         local u_value::Float64 = @fastmath isotropic_u(rand(gen))
-        return @fastmath (u_value, isotropic_v(rand(gen), u_value), isotropic_w(rand(gen), u_value))
+        local rand_val::Float64 = @fastmath rand(gen)
+        return @fastmath (u_value, isotropic_v(rand_val, u_value), isotropic_w(rand_val, u_value))
     end
 
     @inline function produce_time(rand_num::Float64)::Float64
@@ -68,19 +69,15 @@ module Common
     end
 
     @inline function map_material(rand_num::Float64)::Int64
-        if @fastmath (rand_num < c.volfrac[1])
-            return 1
-        else
-            return 2
-        end
+        @fastmath return (rand_num < c.volfrac[1]) ? 1 : 2
     end
 
     @inline function generate_position(gen::MersenneTwister)::NTuple{3, Float64}
         return @fastmath (c.x_len * rand(gen), c.y_len * rand(gen), c.z_len * rand(gen))
     end
 
-    function update_material!(particle::Particle, mat_num::Int64)::Nothing
-        if (mat_num == 1)
+    function update_material!(particle::Particle, material::Int64)::Nothing
+        if (material == 1)
             particle.mat_num = 1
             particle.opacity = @inbounds c.opacity[1]
             particle.spec_heat = @inbounds c.spec_heat[1]
@@ -97,12 +94,8 @@ module Common
         return nothing
     end
 
-    function switch_material!(particle::Particle)::Nothing
-        if (particle.mat_num == 1)
-            update_material!(particle, 2)
-        else
-            update_material!(particle, 1)
-        end
+    @inline function switch_material!(particle::Particle)::Nothing
+        @fastmath (particle.mat_num == 1) ? update_material!(particle, 2) : update_material!(particle, 1)
 
         return nothing
     end

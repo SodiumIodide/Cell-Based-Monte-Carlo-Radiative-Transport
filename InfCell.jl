@@ -19,8 +19,8 @@ include("Common.jl")
 using .Common
 
 function energy_deposition!(particle::Particle, dist::Float64, temp::Float64)::Float64
-    local opacity::Float64 = sigma_a(particle.opacity, temp)
-    local delta_energy::Float64 = @fastmath particle.weight * (1.0 - exp(-opacity * dist))
+    local opacity_mat::Float64 = sigma_a(particle.opacity, temp)
+    local delta_energy::Float64 = @fastmath particle.weight * (1.0 - exp(-opacity_mat * dist))
     @fastmath particle.weight -= delta_energy
 
     # Time-Integrated
@@ -35,7 +35,7 @@ end
 
 function main()::Nothing
     # Mersenne Twister random number generator
-    local generator::MersenneTwister = MersenneTwister(1234)
+    local generator::MersenneTwister = MersenneTwister(123456)
 
     # Energy balance variables
     local energy_balance::RunningStat = RunningStat()
@@ -58,13 +58,14 @@ function main()::Nothing
     local particles::Vector{Particle} = [build_particle(generator, materials[i], particle_weights[i]) for i=1:c.num_particles]
 
     local times::Vector{Float64} = @fastmath [(c.t_init + c.delta_t * i) * c.sol for i=0:c.num_t]  # cm
-    local intensity::Array{Float64, 2} = @fastmath zeros(2, c.num_t + 1)  # erg/cm^2-s
-    local temperature::Array{Float64, 2} = @fastmath zeros(2, c.num_t + 1)  # eV
+    local energy_diff::Vector{Float64} = @fastmath fill(0.0, c.num_t + 1)
+    local intensity::Array{Float64, 2} = @fastmath fill(0.0, 2, c.num_t + 1)  # erg/cm^2-s
+    local temperature::Array{Float64, 2} = @fastmath fill(0.0, 2, c.num_t + 1)  # eV
     @inbounds intensity[1, 1] = intensity[2, 1] = c.init_intensity  # erg/cm^2-s
     @inbounds temperature[1, 1] = temperature[2, 1] = c.init_temp  # eV
 
     # Outer loop - times
-    @showprogress 1 for index=2:@fastmath(c.num_t + 1)
+    for index=2:@fastmath(c.num_t + 1)
         # Track energy balance
         prev_eng = tot_eng
 
@@ -100,7 +101,7 @@ function main()::Nothing
         local energy_cen::Vector{Float64} = zeros(2)
 
         # Inner loop - particles
-        @simd for particle in particles
+        @showprogress 1 for particle in particles
             # Error check
             if (isnan(particle.weight))
                 error("NaN encountered")
@@ -147,8 +148,6 @@ function main()::Nothing
                 end
             else
                 if @fastmath (ratio < rand(generator))
-                    #@inbounds @fastmath energy_cen[particle.mat_num] -= particle.weight
-                    #@inbounds @fastmath energy_dep[particle.mat_num] += particle.weight
                     particle.weight = 0.0
                 else
                     @fastmath particle.weight /= ratio
@@ -168,13 +167,16 @@ function main()::Nothing
 
         # Update energy balance
         tot_eng = @inbounds @fastmath sum(@.(intensity[:, index] * (c.vol / c.sol))) + sum(@.(temperature[:, index] * c.dens * c_v(c.spec_heat, c.init_temp) * c.vol))
-        @fastmath push(energy_balance, abs(tot_eng - prev_eng))
+        @inbounds energy_diff[index] = @fastmath tot_eng - prev_eng
+        @fastmath RunningStatistics.push(energy_balance, abs(tot_eng - prev_eng))
     end  # Time loop
 
     println("Average energy balance: ", mean(energy_balance))
     println("Maximum energy balance: ", greatest(energy_balance))
 
-    local tabular::DataFrame = DataFrame(time=times[2:end], intensity1=intensity[1, 2:end], temp1=energy_from_temp.(temperature[1, 2:end]), intensity2=intensity[2, 2:end], temp2=energy_from_temp.(temperature[2, 2:end]))
+    local int_temp::Array{Float64, 2} = @. temp_from_energy(intensity / c.sol)
+
+    local tabular::DataFrame = DataFrame(time=times[2:end], intensity1=intensity[1, 2:end], temp1=energy_from_temp.(temperature[1, 2:end]), intensity2=intensity[2, 2:end], temp2=energy_from_temp.(temperature[2, 2:end]), energydiff=energy_diff[2:end], tintensity1=int_temp[1, 2:end], ttemp1=temperature[1, 2:end], tintensity2=int_temp[2, 2:end], ttemp2=temperature[2, 2:end])
 
     CSV.write("out/infcell.csv", tabular)
     println("File written")

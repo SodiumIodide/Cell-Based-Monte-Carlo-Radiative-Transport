@@ -6,7 +6,7 @@ import pandas as pd
 
 CSVPATH = "./out"
 PLOTPATH = "./plot"
-ERRPATH = f"{PLOTPATH}/error_v3"
+ERRPATH = f"{PLOTPATH}/error"
 
 def main():
     try:
@@ -41,6 +41,35 @@ def main():
         plt.savefig(f"{PLOTPATH}/infcell_temperature.png")
         plt.cla()
         plt.clf()
+
+        # Energy Difference
+        plt.plot(infcell['time'], infcell['energydiff'], color='g')
+        plt.title("Energy Conservation")
+        plt.xlabel("Time - ct (cm)")
+        plt.ylabel("Delta Energy (erg)")
+        plt.xscale("log")
+        plt.grid(b=True, which="both", axis="both")
+        plt.tight_layout()
+        plt.savefig(f"{PLOTPATH}/energy_conservation.png")
+        plt.cla()
+        plt.clf()
+
+        # Temperature Scale Figure
+        plt.plot(infcell['time'], infcell['tintensity1'], color='b', label="Radiation 1")
+        plt.plot(infcell['time'], infcell['ttemp1'], color='c', label="Material 1")
+        plt.plot(infcell['time'], infcell['tintensity2'], color='r', label="Radiation 2")
+        plt.plot(infcell['time'], infcell['ttemp2'], color='m', label="Material 2")
+        plt.title("Temperature Domain - Radiation and Material")
+        plt.xlabel("Time - ct (cm)")
+        plt.ylabel("Temperature (eV)")
+        plt.xscale("log")
+        plt.yscale("log")
+        plt.grid(b=True, which="both", axis="both")
+        plt.legend(loc="best")
+        plt.tight_layout()
+        plt.savefig(f"{PLOTPATH}/temperature_space.png")
+        plt.cla()
+        plt.clf()
     except Exception as e:
         pass
 
@@ -56,7 +85,7 @@ def main():
         plt.title("Intensity Plot")
         plt.xlabel("Time - ct (cm)")
         plt.ylabel("Intensity (erg/cm^2-s)")
-        plt.xscale("log")
+        #plt.xscale("log")
         plt.yscale("log")
         plt.grid(b=True, which="both", axis="both")
         plt.legend(loc="best")
@@ -73,7 +102,7 @@ def main():
         plt.title("Energy Plot")
         plt.xlabel("Time - ct (cm)")
         plt.ylabel("Energy (erg/cm^3)")
-        plt.xscale("log")
+        #plt.xscale("log")
         plt.yscale("log")
         plt.grid(b=True, which="both", axis="both")
         plt.legend(loc="best")

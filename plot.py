@@ -7,6 +7,12 @@ import pandas as pd
 CSVPATH = "./out"
 PLOTPATH = "./plot"
 ERRPATH = f"{PLOTPATH}/error"
+XSCALE = "log"
+YSCALE = "log"
+LINXSCALE = "log"
+LINYSCALE = "log"
+ERRXSCALE = "log"
+ERRYSCALE = "log"
 
 def main():
     try:
@@ -18,8 +24,8 @@ def main():
         plt.title("Intensity Plot")
         plt.xlabel("Time - ct (cm)")
         plt.ylabel("Intensity (erg/cm^2-s)")
-        plt.xscale("log")
-        plt.yscale("log")
+        plt.xscale(XSCALE)
+        plt.yscale(YSCALE)
         plt.grid(b=True, which="both", axis="both")
         plt.legend(loc="best")
         plt.tight_layout()
@@ -33,8 +39,8 @@ def main():
         plt.title("Energy Plot")
         plt.xlabel("Time - ct (cm)")
         plt.ylabel("Energy (erg/cm^3)")
-        plt.xscale("log")
-        plt.yscale("log")
+        plt.xscale(XSCALE)
+        plt.yscale(YSCALE)
         plt.grid(b=True, which="both", axis="both")
         plt.legend(loc="best")
         plt.tight_layout()
@@ -62,12 +68,82 @@ def main():
         plt.title("Temperature Domain - Radiation and Material")
         plt.xlabel("Time - ct (cm)")
         plt.ylabel("Temperature (eV)")
-        plt.xscale("log")
-        plt.yscale("log")
+        plt.xscale(XSCALE)
+        plt.yscale(YSCALE)
         plt.grid(b=True, which="both", axis="both")
         plt.legend(loc="best")
         plt.tight_layout()
         plt.savefig(f"{PLOTPATH}/temperature_space.png")
+        plt.cla()
+        plt.clf()
+    except Exception as e:
+        pass
+
+    try:
+        linear = pd.read_csv(f"{CSVPATH}/analytic_linear.csv")
+
+        # Intensity
+        plt.plot(linear['time'], linear['intensity1'], color='b', label="Material 1")
+        plt.plot(linear['time'], linear['intensity2'], color='r', label="Material 2")
+        plt.title("Intensity Plot")
+        plt.xlabel("Time - ct (cm)")
+        plt.ylabel("Intensity (erg/cm^2-s)")
+        plt.xscale(XSCALE)
+        plt.yscale(YSCALE)
+        plt.grid(b=True, which="both", axis="both")
+        plt.legend(loc="best")
+        plt.tight_layout()
+        plt.savefig(f"{PLOTPATH}/linear_intensity.png")
+        plt.cla()
+        plt.clf()
+
+        # Temperature
+        plt.plot(linear['time'], linear['energy1'], color='b', label="Material 1")
+        plt.plot(linear['time'], linear['energy2'], color='r', label="Material 2")
+        plt.title("Energy Plot")
+        plt.xlabel("Time - ct (cm)")
+        plt.ylabel("Energy (erg/cm^3)")
+        plt.xscale(XSCALE)
+        plt.yscale(YSCALE)
+        plt.grid(b=True, which="both", axis="both")
+        plt.legend(loc="best")
+        plt.tight_layout()
+        plt.savefig(f"{PLOTPATH}/linear_temperature.png")
+        plt.cla()
+        plt.clf()
+    except Exception as e:
+        pass
+
+    try:
+        infcelllinear = pd.read_csv(f"{CSVPATH}/infcelllinear.csv")
+
+        # Intensity
+        plt.plot(infcelllinear['time'], infcelllinear['intensity1'], color='b', label="Material 1")
+        plt.plot(infcelllinear['time'], infcelllinear['intensity2'], color='r', label="Material 2")
+        plt.title("Intensity Plot")
+        plt.xlabel("Time - ct (cm)")
+        plt.ylabel("Intensity (erg/cm^2-s)")
+        plt.xscale(XSCALE)
+        plt.yscale(YSCALE)
+        plt.grid(b=True, which="both", axis="both")
+        plt.legend(loc="best")
+        plt.tight_layout()
+        plt.savefig(f"{PLOTPATH}/iclinear_intensity.png")
+        plt.cla()
+        plt.clf()
+
+        # Temperature
+        plt.plot(infcelllinear['time'], infcelllinear['energy1'], color='b', label="Material 1")
+        plt.plot(infcelllinear['time'], infcelllinear['energy2'], color='r', label="Material 2")
+        plt.title("Energy Plot")
+        plt.xlabel("Time - ct (cm)")
+        plt.ylabel("Energy (erg/cm^3)")
+        plt.xscale(XSCALE)
+        plt.yscale(YSCALE)
+        plt.grid(b=True, which="both", axis="both")
+        plt.legend(loc="best")
+        plt.tight_layout()
+        plt.savefig(f"{PLOTPATH}/iclinear_energy.png")
         plt.cla()
         plt.clf()
     except Exception as e:
@@ -85,8 +161,8 @@ def main():
         plt.title("Intensity Plot")
         plt.xlabel("Time - ct (cm)")
         plt.ylabel("Intensity (erg/cm^2-s)")
-        #plt.xscale("log")
-        plt.yscale("log")
+        plt.xscale(LINXSCALE)
+        plt.yscale(LINYSCALE)
         plt.grid(b=True, which="both", axis="both")
         plt.legend(loc="best")
         plt.tight_layout()
@@ -102,8 +178,8 @@ def main():
         plt.title("Energy Plot")
         plt.xlabel("Time - ct (cm)")
         plt.ylabel("Energy (erg/cm^3)")
-        #plt.xscale("log")
-        plt.yscale("log")
+        plt.xscale(LINXSCALE)
+        plt.yscale(LINYSCALE)
         plt.grid(b=True, which="both", axis="both")
         plt.legend(loc="best")
         plt.tight_layout()
@@ -143,8 +219,8 @@ def main():
         plt.title("Relative Error Plot")
         plt.xlabel("Time - ct (cm)")
         plt.ylabel("Relative Error")
-        plt.xscale("log")
-        plt.yscale("log")
+        plt.xscale(ERRXSCALE)
+        plt.yscale(ERRYSCALE)
         plt.grid(b=True, which="both", axis="both")
         plt.legend(loc="best")
         plt.tight_layout()

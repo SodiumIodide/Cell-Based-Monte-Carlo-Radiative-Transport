@@ -42,6 +42,8 @@ function main()::Nothing
     local tot_eng::Float64 = @fastmath c.init_intensity * (c.vol_cell / c.sol) + sum(@.(c.init_temp * c.dens * c_v(c.spec_heat, c.init_temp) * c.vol))
     local prev_eng::Float64 = 0.0
 
+    local init_energy::Float64 = energy_from_temp(c.init_temp)  # erg/cm^3
+
     # Generate the initial materials to map particles to
     local materials::Vector{Int64} = map_material.(rand(generator, c.num_particles))
 
@@ -60,9 +62,9 @@ function main()::Nothing
     local times::Vector{Float64} = @fastmath [(c.t_init + c.delta_t * i) * c.sol for i=0:c.num_t]  # cm
     local energy_diff::Vector{Float64} = @fastmath fill(0.0, c.num_t + 1)
     local intensity::Array{Float64, 2} = @fastmath fill(0.0, 2, c.num_t + 1)  # erg/cm^2-s
-    local temperature::Array{Float64, 2} = @fastmath fill(0.0, 2, c.num_t + 1)  # eV
+    local energy::Array{Float64, 2} = @fastmath fill(0.0, 2, c.num_t + 1)  # eV
     @inbounds intensity[1, 1] = intensity[2, 1] = c.init_intensity  # erg/cm^2-s
-    @inbounds temperature[1, 1] = temperature[2, 1] = c.init_temp  # eV
+    @inbounds energy[1, 1] = energy[2, 1] = init_energy  # eV
 
     # Outer loop - times
     @showprogress 1 for index=2:@fastmath(c.num_t + 1)
@@ -73,12 +75,12 @@ function main()::Nothing
         next_time!.(particles)
 
         # Compute material properties based on temperature
-        local sigma_a_mat::Vector{Float64} = @inbounds @fastmath @. sigma_a(c.opacity, temperature[:, index - 1])
-        local c_v_mat::Vector{Float64} = @inbounds @fastmath @. c_v(c.spec_heat, temperature[:, index - 1])
-        local rho_mat::Vector{Float64} = @inbounds @fastmath @. rho(c.dens, temperature[:, index - 1])
+        local sigma_a_mat::Vector{Float64} = c.opacity
+        local c_v_mat::Vector{Float64} = c.spec_heat
+        local rho_mat::Vector{Float64} = c.dens
 
         # Calculate emission terms
-        local energy_em::Vector{Float64} = @inbounds @fastmath @. c.sol * c.arad * sigma_a_mat * temperature[:, index - 1]^4 * c.vol * c.delta_t
+        local energy_em::Vector{Float64} = @inbounds @fastmath @. c.sol * sigma_a_mat * energy[:, index - 1] * c.vol * c.delta_t
 
         # Add more particles via emission
         local materials_add::Vector{Int64} = map_material.(rand(generator, c.num_particles_add))
@@ -119,7 +121,7 @@ function main()::Nothing
                 local dist_c::Float64 = dist_to_census(particle)  # cm
                 # Apply distance computations
                 local min_distance::Float64 = @fastmath minimum([dist_b dist_c dist_t])  # cm
-                @inbounds @fastmath deposit_energy!(particle, energy_dep, min_distance, temperature[:, index - 1])
+                @inbounds @fastmath deposit_energy!(particle, energy_dep, min_distance, energy[:, index - 1])
                 move_particle!(particle, min_distance)
                 # Particle meets boundary
                 if @fastmath (min_distance == dist_b)
@@ -164,10 +166,10 @@ function main()::Nothing
         @inbounds intensity[:, index] = @fastmath @. energy_cen * (c.sol / c.vol)
 
         # Calculate temperature change based on deposition and emission
-        @inbounds temperature[:, index] = @fastmath @. temperature[:, index - 1] + (energy_dep - energy_em) / (rho_mat * c_v_mat * c.vol)
+        @inbounds energy[:, index] = @fastmath @. energy[:, index - 1] + (energy_dep - energy_em) / (rho_mat * c_v_mat * c.vol) * 4.0 * c.arad
 
         # Update energy balance
-        tot_eng = @inbounds @fastmath sum(@.(intensity[:, index] * (c.vol / c.sol))) + sum(@.(temperature[:, index] * rho_mat * c_v_mat * c.vol))
+        tot_eng = @inbounds @fastmath sum(@.(intensity[:, index] * (c.vol / c.sol))) + sum(@.(temp_from_energy(energy[:, index]) * rho_mat * c_v_mat * c.vol))
         @inbounds energy_diff[index] = @fastmath tot_eng - prev_eng
         @fastmath RunningStatistics.push(energy_balance, abs(tot_eng - prev_eng))
     end  # Time loop
@@ -177,9 +179,9 @@ function main()::Nothing
 
     local int_temp::Array{Float64, 2} = @. temp_from_energy(intensity / c.sol)
 
-    local tabular::DataFrame = DataFrame(time=times[2:end], intensity1=intensity[1, 2:end], temp1=energy_from_temp.(temperature[1, 2:end]), intensity2=intensity[2, 2:end], temp2=energy_from_temp.(temperature[2, 2:end]), energydiff=energy_diff[2:end], tintensity1=int_temp[1, 2:end], ttemp1=temperature[1, 2:end], tintensity2=int_temp[2, 2:end], ttemp2=temperature[2, 2:end])
+    local tabular::DataFrame = DataFrame(time=times[2:end], intensity1=intensity[1, 2:end], energy1=energy[1, 2:end], intensity2=intensity[2, 2:end], energy2=energy[2, 2:end], energydiff=energy_diff[2:end])
 
-    CSV.write("out/infcell.csv", tabular)
+    CSV.write("out/infcelllinear.csv", tabular)
     println("File written")
 
     return nothing

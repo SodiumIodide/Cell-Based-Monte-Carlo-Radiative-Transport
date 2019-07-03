@@ -5,7 +5,7 @@ module GeometryGen
 
     set_zero_subnormals(true)
 
-    function get_geometry(chord_a::Float64, chord_b::Float64, end_time::Float64, num_divs::Int64; rng::MersenneTwister=MersenneTwister(1234))::Tuple{Vector{Float64}, Vector{Float64}, Vector{Int32}, Float64}
+    function get_geometry(chord_a::Float64, chord_b::Float64, end_time::Float64, num_divs::Int64; rng::MersenneTwister=MersenneTwister(1234), starting_material=nothing)::Tuple{Vector{Float64}, Vector{Float64}, Vector{Int32}, Float64}
         # Computational utilities
         local material_num::Int32
         local rand_num::Float64
@@ -26,14 +26,18 @@ module GeometryGen
         local sample_time::Float64 = @fastmath chord * (-log(0.5))
         local est_size::Int64 = convert(Int64, ceil(@fastmath(end_time / sample_time * num_divs)))
 
-        sizehint!(x_delta, est_size)
-        sizehint!(materials, est_size)
-        sizehint!(x_arr, est_size)
+        #sizehint!(x_delta, est_size)
+        #sizehint!(materials, est_size)
+        #sizehint!(x_arr, est_size)
 
         # Determine first material to use
         local prob_a::Float64 = @fastmath chord_a / (chord_a + chord_b)
-        rand_num = @fastmath rand(rng, Float64)
-        material_num = @fastmath (rand_num < prob_a) ? 1 : 2
+        if @fastmath (starting_material == nothing)
+            rand_num = @fastmath rand(rng, Float64)
+            material_num = @fastmath (rand_num < prob_a) ? 1 : 2
+        else
+            material_num = starting_material
+        end
 
         # Loop to build geometry
         while (cons_time < end_time)

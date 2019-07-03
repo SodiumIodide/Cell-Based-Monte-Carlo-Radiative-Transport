@@ -4,7 +4,7 @@ module Constants
     set_zero_subnormals(true)
 
     # Histogram and problem parameters
-    global const num_t = convert(Int64, 1e5)
+    global const num_t = convert(Int64, 1e4)
     global const num_particles = convert(Int64, 1e4)
     global const num_particles_add = div(num_particles, convert(Int64, 1e1))
 
@@ -60,6 +60,6 @@ module Constants
 
     # Realization terms
     global const max_iterations = convert(Int64, 1e4)
-    global const num_divs = convert(Int64, 1e3)
+    global const num_divs = convert(Int64, 1e1)
     global const tolerance = 1e-3
 end
